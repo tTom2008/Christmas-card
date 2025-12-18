@@ -1,0 +1,30 @@
+<script type="text/javascript" src="snowstorm.js"></script>
+  <script type="text/javascript">
+snowStorm.snowColor = '#99ccff'; // blue-ish snow!?
+snowStorm.flakesMaxActive = 1000;  // show more snow on screen at once
+snowStorm.useTwinkleEffect = true; // let the snow flicker in and out of view
+</script>
+<script type="text/javascript">
+  if (typeof snowStorm !== 'undefined') {
+    // 1. Số lượng hạt thực tế (Đừng để quá 10.000 vì trình duyệt sẽ treo)
+    snowStorm.flakesMax = 900;           
+    snowStorm.flakesMaxActive = 500;    
+
+    // 2. Tăng kích thước hạt tuyết (Đây là lý do bạn thấy ít)
+    // Nếu hạt quá nhỏ, dù có 1 triệu hạt bạn vẫn thấy ít.
+    snowStorm.snowCharacter = '*';       // Dùng dấu chấm to hơn hoặc '*'
+    snowStorm.fontSize = 100000;             // Tăng kích cỡ hạt tuyết lên
+
+    // 3. Tăng tốc độ và độ dày
+    snowStorm.vMaxX = 14;                // Gió thổi mạnh theo chiều ngang
+    snowStorm.vMaxY = 25;                // Tuyết rơi cực nhanh
+    
+    // 4. Tuyết đọng và hiệu ứng
+    snowStorm.snowStick = true;          // Tuyết đọng lại ở đáy
+    snowStorm.useTwinkleEffect = true;   // Lấp lánh
+    snowStorm.followMouse = true;
+    
+    // 5. Quan trọng: Tốc độ quét khung hình
+    snowStorm.animationInterval = 10;    // Tốc độ update cực cao cho màn 280Hz
+  }
+</script>

@@ -4,101 +4,57 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Merry Christmas - Interactive AR</title>
-    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
-
     <style>
-        body { margin: 0; overflow: hidden; background-color: #000000; font-family: 'Segoe UI', sans-serif; }
+        body { margin: 0; overflow: hidden; background-color: #000; font-family: 'Segoe UI', sans-serif; }
         #canvas-container { width: 100%; height: 100vh; display: block; }
-        
-        #ui-layer {
-            position: absolute; bottom: 30px; width: 100%;
-            text-align: center; pointer-events: none; z-index: 100;
-        }
-        
-        .badge {
-            display: inline-block; background: rgba(0,0,0,0.7);
-            border: 2px solid #FFD700; color: #FFD700;
-            padding: 10px 25px; border-radius: 50px;
-            font-size: 18px; font-weight: bold; margin-bottom: 10px;
-            text-transform: uppercase; letter-spacing: 1px;
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
-            text-shadow: 0 0 10px #FFD700;
-        }
-
+        #ui-layer { position: absolute; bottom: 30px; width: 100%; text-align: center; pointer-events: none; z-index: 100; }
+        .badge { display: inline-block; background: rgba(0,0,0,0.7); border: 2px solid #FFD700; color: #FFD700; padding: 10px 25px; border-radius: 50px; font-size: 18px; font-weight: bold; margin-bottom: 10px; box-shadow: 0 0 20px rgba(255, 215, 0, 0.5); }
         .guide { color: #ccc; font-size: 13px; margin-bottom: 20px; text-shadow: 0 2px 4px black;}
-
-        button {
-            pointer-events: auto; cursor: pointer;
-            background: linear-gradient(to bottom, #D32F2F, #8B0000); 
-            color: #FFF; border: 2px solid #FFD700;
-            padding: 15px 50px; border-radius: 30px; 
-            font-weight: 800; font-size: 16px;
-            box-shadow: 0 0 30px rgba(255, 0, 0, 0.6);
-            animation: pulse 1.5s infinite;
-        }
+        button { pointer-events: auto; cursor: pointer; background: linear-gradient(to bottom, #D32F2F, #8B0000); color: #FFF; border: 2px solid #FFD700; padding: 15px 50px; border-radius: 30px; font-weight: 800; animation: pulse 1.5s infinite; }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
-
-        #camera-preview {
-            position: absolute; top: 15px; right: 15px;
-            width: 120px; height: 90px;
-            border: 2px solid rgba(255,0,0,0.5); 
-            transform: scaleX(-1); opacity: 0.6; border-radius: 8px;
-        }
+        #camera-preview { position: absolute; top: 15px; right: 15px; width: 120px; height: 90px; border: 2px solid rgba(255,0,0,0.5); transform: scaleX(-1); opacity: 0.6; border-radius: 8px; }
     </style>
 </head>
 <body>
     <div id="ui-layer">
         <div id="status" class="badge">🎄 Giang Sinh An Lanh 🎄</div>
-        <div class="guide">
-            🖐 <b>Xòe & Di chuyển:</b> Xoay album ảnh &nbsp;|&nbsp; 👌 <b>Pinch:</b> Phóng to ảnh giữa &nbsp;|&nbsp; ✊ <b>Nắm:</b> Thu cây thông
-        </div>
+        <div class="guide">🖐 <b>Xòe:</b> Xoay (Tay càng xa tâm xoay càng nhanh) | 👌 <b>Pinch:</b> Phóng to | ✊ <b>Nắm:</b> Thu cây</div>
         <button id="btnStart" onclick="startSystem()">BẮT ĐẦU</button>
     </div>
-
     <div id="canvas-container"></div>
     <video class="input_video" style="display:none"></video>
     <canvas id="camera-preview"></canvas>
 
     <script>
         const MUSIC_URL = "./audio.mp3";
-        let bgMusic = new Audio(MUSIC_URL);
-        bgMusic.loop = true;
+        let bgMusic = new Audio(MUSIC_URL); bgMusic.loop = true;
 
         const loader = new THREE.TextureLoader();
         loader.setCrossOrigin('anonymous'); 
 
         const photoFiles = [
-            'https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/1.jpg',
-            'https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/2.jpg',
-            'https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/3.jpg',
-            'https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/4.jpg',
-            'https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/5.jpg',
-            'https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/6.jpg',
-            'https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/7.jpg',
-            'https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/8.jpg',
-            'https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/9.jpg',
-            'https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/10.jpg',
+            'https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/1.jpg','https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/2.jpg',
+            'https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/3.jpg','https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/4.jpg',
+            'https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/5.jpg','https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/6.jpg',
+            'https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/7.jpg','https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/8.jpg',
+            'https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/9.jpg','https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/10.jpg',
             'https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/11.jpg'
         ];
-
         const photoTextures = photoFiles.map(f => loader.load(f));
 
         function createCustomTexture(type) {
-            const canvas = document.createElement('canvas');
-            canvas.width = 128; canvas.height = 128;
+            const canvas = document.createElement('canvas'); canvas.width = 128; canvas.height = 128;
             const ctx = canvas.getContext('2d');
-            const cx = 64, cy = 64;
-
             if (type === 'gold_glow') {
-                const grd = ctx.createRadialGradient(cx, cy, 0, cx, cy, 40);
+                const grd = ctx.createRadialGradient(64, 64, 0, 64, 64, 40);
                 grd.addColorStop(0, '#FFFFFF'); grd.addColorStop(0.5, '#FFD700'); grd.addColorStop(1, 'rgba(0,0,0,0)');
                 ctx.fillStyle = grd; ctx.fillRect(0,0,128,128);
             } else if (type === 'red_light') {
-                const grd = ctx.createRadialGradient(cx, cy, 0, cx, cy, 50);
+                const grd = ctx.createRadialGradient(64, 64, 0, 64, 64, 50);
                 grd.addColorStop(0, '#FFAAAA'); grd.addColorStop(0.3, '#FF0000'); grd.addColorStop(1, 'rgba(0,0,0,0)');
                 ctx.fillStyle = grd; ctx.fillRect(0,0,128,128);
             } else if (type === 'gift_red') {
@@ -109,30 +65,18 @@
         }
 
         const textures = { gold: createCustomTexture('gold_glow'), red: createCustomTexture('red_light'), gift: createCustomTexture('gift_red') };
+        const CONFIG = { goldCount: 2500, redCount: 300, giftCount: 150, explodeRadius: 65, photoOrbitRadius: 45, treeHeight: 70, treeBaseRadius: 35 };
 
-        const CONFIG = {
-            goldCount: 2500, redCount: 300, giftCount: 150,
-            explodeRadius: 65, 
-            photoOrbitRadius: 45,
-            treeHeight: 70, treeBaseRadius: 35
-        };
-
-        let scene, camera, renderer, groupGold, groupRed, groupGift;
-        let photoMeshes = [], titleMesh, starMesh;
-        let state = 'TREE';
-        let selectedIndex = 0;
-        let handX = 0.5;
-        let currentRotationY = 0;
-        let targetRotationY = 0;
+        let scene, camera, renderer, groupGold, groupRed, groupGift, photoMeshes = [], titleMesh, starMesh;
+        let state = 'TREE', selectedIndex = 0, handX = 0.5;
+        let rotationAngle = 0; // Góc xoay tích lũy
+        let rotationVelocity = 0.005; // Vận tốc xoay mặc định
 
         function init3D() {
             const container = document.getElementById('canvas-container');
-            scene = new THREE.Scene();
-            scene.fog = new THREE.FogExp2(0x000000, 0.002);
-
+            scene = new THREE.Scene(); scene.fog = new THREE.FogExp2(0x000000, 0.002);
             camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 1000);
             camera.position.z = 100;
-
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(window.devicePixelRatio);
@@ -141,102 +85,81 @@
             groupGold = createParticleSystem('gold', CONFIG.goldCount, 2.0);
             groupRed = createParticleSystem('red', CONFIG.redCount, 3.5);
             groupGift = createParticleSystem('gift', CONFIG.giftCount, 3.0);
-
-            createPhotos();
-            createDecorations();
-            animate();
+            createPhotos(); createDecorations(); animate();
         }
 
         function createParticleSystem(type, count, size) {
-            const pPositions = [], pExplodeTargets = [], pTreeTargets = [];
+            const pPos = [], pExp = [], pTree = [];
             for(let i=0; i<count; i++) {
-                const h = Math.random() * CONFIG.treeHeight;
-                const y = h - CONFIG.treeHeight / 2;
-                const maxR = (1 - (h / CONFIG.treeHeight)) * CONFIG.treeBaseRadius;
-                const r = maxR * (type === 'gold' ? Math.sqrt(Math.random()) : 1);
-                const theta = Math.random() * Math.PI * 2;
-                pTreeTargets.push(r * Math.cos(theta), y, r * Math.sin(theta));
-
-                const phi = Math.acos(2 * Math.random() - 1), lam = 2 * Math.PI * Math.random();
-                const rad = CONFIG.explodeRadius * Math.cbrt(Math.random()) * (type === 'gift' ? 1.2 : 1);
-                pExplodeTargets.push(rad * Math.sin(phi) * Math.cos(lam), rad * Math.sin(phi) * Math.sin(lam), rad * Math.cos(phi));
-                pPositions.push(pTreeTargets[3*i], y, pTreeTargets[3*i+2]);
+                const h = Math.random() * 70, y = h - 35, maxR = (1 - (h / 70)) * 35;
+                const r = maxR * (type === 'gold' ? Math.sqrt(Math.random()) : 1), theta = Math.random() * Math.PI * 2;
+                pTree.push(r * Math.cos(theta), y, r * Math.sin(theta));
+                const phi = Math.acos(2 * Math.random() - 1), lam = 2 * Math.PI * Math.random(), rad = 65 * Math.cbrt(Math.random()) * (type === 'gift' ? 1.2 : 1);
+                pExp.push(rad * Math.sin(phi) * Math.cos(lam), rad * Math.sin(phi) * Math.sin(lam), rad * Math.cos(phi));
+                pPos.push(pTree[3*i], y, pTree[3*i+2]);
             }
             const geo = new THREE.BufferGeometry();
-            geo.setAttribute('position', new THREE.Float32BufferAttribute(pPositions, 3));
-            geo.userData = { tree: pTreeTargets, explode: pExplodeTargets };
-            const mat = new THREE.PointsMaterial({ size, map: textures[type], transparent: true, blending: type==='gift'?THREE.NormalBlending:THREE.AdditiveBlending, depthWrite: false });
-            const points = new THREE.Points(geo, mat);
-            scene.add(points);
-            return points;
+            geo.setAttribute('position', new THREE.Float32BufferAttribute(pPos, 3));
+            geo.userData = { tree: pTree, explode: pExp };
+            const mat = new THREE.PointsMaterial({ size, map: textures[type], transparent: true, blending: type==='gift'?1:2, depthWrite: false });
+            const pts = new THREE.Points(geo, mat); scene.add(pts); return pts;
         }
 
         function createPhotos() {
             const geo = new THREE.PlaneGeometry(10, 10);
             for(let i=0; i < photoFiles.length; i++) {
-                const mat = new THREE.MeshBasicMaterial({ map: photoTextures[i], side: THREE.DoubleSide, transparent: true });
-                const mesh = new THREE.Mesh(geo, mat);
-                mesh.visible = false;
-                scene.add(mesh);
-                photoMeshes.push(mesh);
+                const mat = new THREE.MeshBasicMaterial({ map: photoTextures[i], side: 2, transparent: true });
+                const mesh = new THREE.Mesh(geo, mat); mesh.visible = false; scene.add(mesh); photoMeshes.push(mesh);
             }
         }
 
         function createDecorations() {
-            const canvas = document.createElement('canvas');
-            canvas.width = 1024; canvas.height = 256;
-            const ctx = canvas.getContext('2d');
-            ctx.font = 'bold italic 90px "Times New Roman"';
-            ctx.fillStyle = '#FFD700'; ctx.textAlign = 'center';
-            ctx.shadowColor = "#FF0000"; ctx.shadowBlur = 40;
+            const canvas = document.createElement('canvas'); canvas.width = 1024; canvas.height = 256;
+            const ctx = canvas.getContext('2d'); ctx.font = 'bold italic 90px "Times New Roman"';
+            ctx.fillStyle = '#FFD700'; ctx.textAlign = 'center'; ctx.shadowColor = "#FF0000"; ctx.shadowBlur = 40;
             ctx.fillText("MERRY CHRISTMAS", 512, 130);
-            titleMesh = new THREE.Mesh(new THREE.PlaneGeometry(60, 15), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(canvas), transparent: true, blending: THREE.AdditiveBlending }));
-            titleMesh.position.set(0, 50, 0);
-            scene.add(titleMesh);
-
-            starMesh = new THREE.Mesh(new THREE.PlaneGeometry(12, 12), new THREE.MeshBasicMaterial({ map: textures.gold, transparent: true, blending: THREE.AdditiveBlending }));
-            starMesh.position.set(0, CONFIG.treeHeight/2 + 5, 0);
-            scene.add(starMesh);
+            titleMesh = new THREE.Mesh(new THREE.PlaneGeometry(60, 15), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(canvas), transparent: true, blending: 2 }));
+            titleMesh.position.y = 50; scene.add(titleMesh);
+            starMesh = new THREE.Mesh(new THREE.PlaneGeometry(12, 12), new THREE.MeshBasicMaterial({ map: textures.gold, transparent: true, blending: 2 }));
+            starMesh.position.y = 40; scene.add(starMesh);
         }
 
         function animate() {
             requestAnimationFrame(animate);
             const time = Date.now() * 0.001;
             
-            targetRotationY = (handX - 0.5) * Math.PI * 4; 
-            currentRotationY += (targetRotationY - currentRotationY) * 0.08;
+            // LOGIC MỚI: Tính vận tốc xoay dựa trên vị trí tay
+            // handX từ 0 (trái) đến 1 (phải). Tâm là 0.5.
+            const offsetFromCenter = handX - 0.5; 
+            // Vận tốc = Xoay nhẹ tự động (0.005) + Xoay theo tay (tỉ lệ 0.1)
+            const targetVelocity = 0.005 + (offsetFromCenter * 0.1);
+            rotationVelocity += (targetVelocity - rotationVelocity) * 0.1; // Làm mượt vận tốc
+            rotationAngle += rotationVelocity; // Cộng dồn góc xoay
 
             [groupGold, groupRed, groupGift].forEach(g => {
                 const pos = g.geometry.attributes.position.array;
                 const targets = g.geometry.userData[state === 'TREE' ? 'tree' : 'explode'];
                 for(let i=0; i<pos.length; i++) pos[i] += (targets[i] - pos[i]) * 0.08;
                 g.geometry.attributes.position.needsUpdate = true;
-                
                 if (state === 'TREE') g.rotation.y += 0.005;
-                else g.rotation.y = currentRotationY;
+                else g.rotation.y = rotationAngle;
             });
 
             if (state === 'TREE') {
                 titleMesh.visible = starMesh.visible = true;
                 photoMeshes.forEach(m => { m.visible = false; m.scale.set(0,0,0); });
-            } else if (state === 'EXPLODE' || state === 'PHOTO') {
+            } else {
                 titleMesh.visible = starMesh.visible = false;
-                const angleStep = (Math.PI * 2) / photoFiles.length; 
-                let maxZ = -999;
-                let candidateIndex = selectedIndex;
+                const step = (Math.PI * 2) / photoFiles.length;
+                let maxZ = -999, candidate = selectedIndex;
 
-                // Loop 1: Calculate positions and find the centered photo (max Z)
                 photoMeshes.forEach((mesh, i) => {
                     mesh.visible = true;
-                    const angle = currentRotationY + i * angleStep;
-                    const x = Math.sin(angle) * CONFIG.photoOrbitRadius;
-                    const z = Math.cos(angle) * CONFIG.photoOrbitRadius;
+                    const angle = rotationAngle + i * step;
+                    const x = Math.sin(angle) * 45, z = Math.cos(angle) * 45;
 
                     if (state === 'EXPLODE') {
-                        if (z > maxZ) { 
-                            maxZ = z; 
-                            candidateIndex = i; 
-                        }
+                        if (z > maxZ) { maxZ = z; candidate = i; }
                         mesh.position.lerp(new THREE.Vector3(x, Math.sin(time + i) * 2, z), 0.1);
                         mesh.scale.lerp(new THREE.Vector3(1.5, 1.5, 1.5), 0.1);
                         mesh.material.opacity = THREE.MathUtils.lerp(mesh.material.opacity, (z > 20 ? 1 : 0.3), 0.1);
@@ -244,14 +167,12 @@
                     mesh.lookAt(camera.position);
                 });
 
-                if (state === 'EXPLODE') selectedIndex = candidateIndex;
+                if (state === 'EXPLODE') selectedIndex = candidate;
 
-                // Loop 2: Apply zoom-in effect to selected photo
                 photoMeshes.forEach((mesh, i) => {
                     if (state === 'PHOTO' && i === selectedIndex) {
                         mesh.position.lerp(new THREE.Vector3(0, 0, 50), 0.1);
-                        mesh.scale.lerp(new THREE.Vector3(6, 6, 6), 0.1); 
-                        mesh.material.opacity = 1;
+                        mesh.scale.lerp(new THREE.Vector3(6, 6, 6), 0.1); mesh.material.opacity = 1;
                     } else if (state === 'PHOTO') {
                         mesh.material.opacity = THREE.MathUtils.lerp(mesh.material.opacity, 0.1, 0.1);
                         mesh.scale.lerp(new THREE.Vector3(0.5, 0.5, 0.5), 0.1);
@@ -262,17 +183,10 @@
         }
 
         function startSystem() {
-            document.getElementById('btnStart').style.display = 'none';
-            bgMusic.play();
-            init3D();
-            const video = document.getElementsByClassName('input_video')[0];
-            const canvas = document.getElementById('camera-preview');
-            const ctx = canvas.getContext('2d');
-            const statusDiv = document.getElementById('status');
-            
+            document.getElementById('btnStart').style.display = 'none'; bgMusic.play(); init3D();
+            const video = document.querySelector('.input_video'), canvas = document.getElementById('camera-preview'), ctx = canvas.getContext('2d'), statusDiv = document.getElementById('status');
             const hands = new Hands({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`});
             hands.setOptions({ maxNumHands: 1, modelComplexity: 0, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
-
             hands.onResults(results => {
                 ctx.clearRect(0,0,120,90); ctx.drawImage(results.image, 0, 0, 120, 90);
                 if(results.multiHandLandmarks.length > 0) {
@@ -280,19 +194,12 @@
                     handX = lm[9].x; 
                     const avgDist = [8,12,16,20].reduce((sum, i) => sum + Math.hypot(lm[i].x-lm[0].x, lm[i].y-lm[0].y), 0) / 4;
                     const pinchDist = Math.hypot(lm[4].x-lm[8].x, lm[4].y-lm[8].y);
-
                     if (avgDist < 0.2) { state = 'TREE'; statusDiv.innerText = "✊ Đang thu cây"; }
                     else if (pinchDist < 0.05) { state = 'PHOTO'; statusDiv.innerText = "👌 Đang xem ảnh"; }
-                    else { state = 'EXPLODE'; statusDiv.innerText = "🖐 Di chuyển tay để xoay ảnh"; }
-                } else {
-                    state = 'TREE'; statusDiv.innerText = "🎄 Chờ bàn tay...";
-                }
+                    else { state = 'EXPLODE'; statusDiv.innerText = "🖐 Di chuyển tay để điều tốc xoay"; }
+                } else { state = 'TREE'; handX = 0.5; statusDiv.innerText = "🎄 Chờ bàn tay..."; }
             });
-
-            const cameraUtils = new Camera(video, {
-                onFrame: async () => { await hands.send({image: video}); }, width: 320, height: 240
-            });
-            cameraUtils.start();
+            new Camera(video, { onFrame: async () => { await hands.send({image: video}); }, width: 320, height: 240 }).start();
         }
     </script>
 </body>

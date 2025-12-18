@@ -4,108 +4,86 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Merry Christmas</title>
-    <link rel="stylesheet" type="text/css" href="css/normalize.css" />
-    <link rel="stylesheet" type="text/css" href="css/style.css" />
     <style>
-        /* Ép body và html luôn chiếm hết màn hình và căn giữa */
-        html, body { 
-            height: 100% !important; 
-            margin: 0 !important; 
+        /* Ép toàn bộ giao diện vào giữa màn hình */
+        html, body {
+            height: 100vh !important;
+            width: 100vw !important;
+            margin: 0 !important;
             padding: 0 !important;
-            background-color: #151522; 
-            overflow: hidden; 
+            background-color: #151522;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        /* Căn giữa tuyệt đối cho container */
-        .container { 
-            position: fixed; /* Chế độ cố định để không bị ảnh hưởng bởi file CSS khác */
+        /* Container cố định ở giữa tuyệt đối */
+        .container {
+            position: fixed;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%); /* Căn giữa toạ độ vàng */
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
+            transform: translate(-50%, -50%);
             z-index: 10;
         }
 
-        button { 
-            cursor: pointer; 
-            position: relative; 
-            width: 250px; 
-            height: 250px; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            background: none; 
-            border: none; 
-            padding: 0; 
+        button {
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+            width: 300px; /* Tăng kích thước hộp quà cho rõ hơn */
+            height: 300px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
-        button div { 
-            width: 100%; 
-            height: 100%; 
-            position: absolute; 
-            background: white; 
-            border-radius: 100%; 
-            filter: blur(150px); 
-            opacity: 0.5; 
+        /* Hào quang trắng xung quanh */
+        button div {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: white;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.5;
         }
 
-        #box img { 
-            width: 100%; 
-            height: 100%; 
-            animation: mystery-box-animation 3s infinite ease-in-out; 
-            position: relative; 
-            z-index: 2; 
-            transition: 5s ease-in-out; /* Mượt mà cho màn hình 280Hz */
-        }
-        
-        @keyframes mystery-box-animation { 
-            0%, 100% { transform: translateY(0); } 
-            50% { transform: translateY(-30px); } 
-        }
-        
-        .transition-background { 
-            position: fixed; 
-            left: 0; 
-            top: 0; 
-            width: 100vw; 
-            height: 100vh; 
-            background-color: #151522; 
-            transition: 5s ease-in-out; 
-            opacity: 0; 
-            z-index: -10; 
-            pointer-events: none; 
+        #box img {
+            width: 100%;
+            height: auto;
+            animation: mystery-box-animation 3s infinite ease-in-out;
+            transition: transform 10s ease-in-out; /* Hiệu ứng thu nhỏ cực lâu */
         }
 
-        .close { opacity: 1; z-index: 1000; }
-        
-        #loading { 
-            position: fixed; 
-            width: 100%; 
-            height: 100%; 
-            background: #151522; 
-            z-index: 9999; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
+        @keyframes mystery-box-animation {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-40px); }
         }
 
-        .spinner { 
-            width: 50px; 
-            height: 50px; 
-            border: 5px solid #fff; 
-            border-top-color: transparent; 
-            border-radius: 50%; 
-            animation: spin 1s linear infinite; 
+        /* Lớp phủ chuyển cảnh tối dần (Kéo dài 10 giây) */
+        .transition-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #151522;
+            transition: opacity 10s ease-in-out; /* Sửa ở đây để dài hơn */
+            opacity: 0;
+            z-index: 999;
+            pointer-events: none;
         }
 
-        @keyframes spin { to { transform: rotate(360deg); } }
+        .close {
+            opacity: 1 !important;
+            z-index: 1000;
+        }
     </style>
 </head>
 <body>
-    <div id="loading"><div class="spinner"></div></div>
-    
+
     <div class="container">
         <button id="box">
             <div></div>
@@ -115,22 +93,18 @@
 
     <div id="transition" class="transition-background"></div>
 
-    <script src="js/jquery.js"></script>
     <script>
-        window.addEventListener('load', function() {
-            document.getElementById('loading').style.display = 'none';
-        });
-
         document.getElementById('box').addEventListener('click', function () {
-            // Hộp quà thu nhỏ lại và biến mất mượt mà
+            // Hộp quà thu nhỏ biến mất dần trong 10 giây
             document.querySelector('#box img').style.transform = 'scale(0)';
             
+            // Màn hình tối dần trong 10 giây
             document.getElementById('transition').classList.add('close');
             
-            // Đợi 7 giây như Lộc muốn để chuyển trang
+            // Đợi 10 giây (10000ms) để tạo độ hồi hộp tối đa
             setTimeout(() => {
-                window.location.href = 'noel1.html'; 
-            }, 7000); 
+                window.location.href = 'noel1.html';
+            }, 10000); 
         });
     </script>
 </body>

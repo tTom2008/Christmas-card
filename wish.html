@@ -82,28 +82,27 @@
     </style>
 </head>
 <body>
-
 <audio id="bgMusic" autoplay loop>
-    <source src="music.mp3" type="audio/mpeg">
+    <source src="music.mp3" type="audio/mpeg">
 </audio>
 
 <script>
-    // Đảm bảo nhạc phát ngay khi trang vừa load xong
-    window.addEventListener('load', function() {
-        const music = document.getElementById('bgMusic');
-        const playPromise = music.play();
+    // Đảm bảo nhạc phát ngay khi trang vừa load xong
+    window.addEventListener('load', function() {
+        const music = document.getElementById('bgMusic');
+        const playPromise = music.play();
 
-        if (playPromise !== undefined) {
-            playPromise.then(_ => {
-                console.log("Nhạc đã tự động phát ở trang B!");
-            }).catch(error => {
-                // Trường hợp trình duyệt vẫn chặn (hiếm khi xảy ra sau khi đã click ở trang A)
-                console.log("Cần click để phát nhạc");
-                // Tự động phát lại khi người dùng chạm vào màn hình trang B
-                document.body.addEventListener('click', () => music.play(), { once: true });
-            });
-        }
-    });
+        if (playPromise !== undefined) {
+            playPromise.then(_ => {
+                console.log("Nhạc đã tự động phát ở trang B!");
+            }).catch(error => {
+                // Trường hợp trình duyệt vẫn chặn (hiếm khi xảy ra sau khi đã click ở trang A)
+                console.log("Cần click để phát nhạc");
+                // Tự động phát lại khi người dùng chạm vào màn hình trang B
+                document.body.addEventListener('click', () => music.play(), { once: true });
+            });
+        }
+    });
 </script>
 
     <div id="glass-card">
@@ -123,83 +122,89 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://unpkg.com/typed.js@2.0.16/dist/typed.umd.js"></script>
     <script>
+        // Hàm xóa dấu cực mạnh (Unicode Normalization)
         function getCleanText(str) {
             if (!str) return "";
-            str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a");
-            str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, "e");
-            str = str.replace(/ì|í|ị|ỉ|ĩ/g, "i");
-            str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, "o");
-            str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, "u");
-            str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y");
-            str = str.replace(/đ/g, "d");
-            return str.toLowerCase().trim();
+            return str.toLowerCase()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .replace(/đ/g, "d")
+                .replace(/\s+/g, " ")
+                .trim();
         }
 
         function startMagic() {
-            const fullName = document.getElementById('nameInput').value.trim();
-            if (!fullName) {
+            const fullNameInput = document.getElementById('nameInput').value.trim();
+            if (!fullNameInput) {
                 alert("Hãy nhập tên nhé!");
                 return;
             }
 
-            // --- KÍCH HOẠT NHẠC KHI NHẤN NÚT ---
+            // Phát nhạc
             const music = document.getElementById('bgMusic');
-            music.play().catch(error => console.log("Trình duyệt chặn tự động phát:", error));
+            music.play().catch(e => console.log("Music play blocked"));
 
-            const cleanFull = getCleanText(fullName);
-            const nameParts = fullName.split(/\s+/);
-            const firstName = getCleanText(nameParts[nameParts.length - 1]);
-            const fullID = cleanFull.replace(/\s+/g, "");
+            // CHUẨN HÓA DỮ LIỆU NHẬP
+            const cleanFull = getCleanText(fullNameInput); // Ví dụ: "nguyen ngoc han"
+            const nameParts = cleanFull.split(" ");
+            const firstNameOnly = nameParts[nameParts.length - 1]; // Ví dụ: "han"
 
             let selectedWish = "";
-            let userType = "lop"; 
+            let userType = "nam"; // Mặc định là nam
 
+            // DANH SÁCH NỮ GỐC (Bắt buộc viết không dấu, chữ thường)
+            const listNuGoc = ["ngoc han", "my han", "thu huong", "bao ngoc", "nhu ngoc", "tieu phung", "minh thu", "thu trang", "ngoc tram", "cam tu", "thanh phuong"];
+
+            // --- LOGIC LỌC TÊN THÔNG MINH ---
+            
+            // 1. Kiểm tra Thầy trước
             if (cleanFull.includes("tuan anh")) {
                 userType = "thay";
-                selectedWish = `Gửi Thầy Tuấn Anh! ❄️ <br> Cảm ơn Thầy đã đến và đồng hành cùng chúng em trong tháng vừa qua. ^500 <br> Chúc Thầy Giáng Sinh an lành, luôn giữ vững ngọn lửa nhiệt huyết để cùng tụi em vượt vũ môn thành công! 🎁`;
+                selectedWish = `Gửi Thầy Tuấn Anh! ❄️ <br> Cảm ơn Thầy đã đồng hành cùng chúng em. ^500 <br> Chúc Thầy Giáng Sinh an lành và rực rỡ! 🎁`;
             } 
             else {
-                userType = "lop";
-                const listNuGoc = ["ngoc han", "my han", "thu huong", "bao ngoc", "nhu ngoc", "tieu phung", "minh thu", "thu trang", "ngoc tram", "cam tu", "thanh phuong"];
-                const laNu = listNuGoc.some(tenNu => cleanFull.includes(tenNu));
+                // 2. Kiểm tra Nữ theo 2 bước:
+                // Bước A: Khớp cả họ tên đệm (Nếu họ nhập: "Nguyễn Ngọc Hân")
+                let checkNu = listNuGoc.some(tenNu => cleanFull.includes(tenNu));
 
-                if (laNu) {
+                // Bước B: Nếu Bước A không khớp, kiểm tra cái Tên cuối cùng (Nếu họ chỉ nhập: "Hân")
+                if (!checkNu) {
+                    checkNu = listNuGoc.some(tenNu => {
+                        const parts = tenNu.split(" ");
+                        return parts[parts.length - 1] === firstNameOnly;
+                    });
+                }
+
+                if (checkNu) {
+                    userType = "nu";
                     const wishesNu = [
-                        `Chào ${fullName}! ❄️ <br> Chúc bạn ôn thi hiệu quả, đỗ đúng nguyện vọng 1 nhé! ✨`,
-                        `${fullName} ơi! 🎄 <br> Giáng Sinh vui vẻ! Luôn giữ vững phong độ học tập để cá chép hóa rồng! ❤️`,
-                        `Gửi ${fullName}, 🎁 <br> Noel ấm áp nhé! Chúc bạn xử gọn đống đề cương và đạt điểm cao! ✨`,
-                        `Merry Christmas, ${fullName}! ❄️ <br> Chúc bạn tự tin để vượt qua các kỳ thi sắp tới thật nhẹ nhàng!`,
-                        `Chúc ${fullName} 🌟 <br> Luôn rạng rỡ và cầm chắc tấm vé vào trường Đại học mơ ước nhé!`,
-                        `${fullName} thân mến! 🎄 <br> Noel cuối cấp rồi, xả stress một chút rồi quay lại chiến đấu thôi!`,
-                        `Chào ${fullName}! ❄️ <br> Chúc bạn học giỏi, thi tốt và luôn là niềm tự hào của lớp!`,
-                        `${fullName} à! 🎁 <br> Noel vui vẻ, bớt áp lực lại và tập trung cao độ để thành công nhé!`,
-                        `Gửi tới ${fullName}, ❤️ <br> Chúc bạn một mùa đông ấm lòng và thi cử thuận lợi nhất!`,
-                        `Merry Xmas, ${fullName}! 🧸 <br> Chúc bạn sớm nhận được tin vui đỗ Đại học như mong đợi! ✨`
+                        `Chào ${fullNameInput}! ❄️ <br> Chúc bạn ôn thi hiệu quả, đỗ đúng nguyện vọng 1 nhé! ✨`,
+                        `${fullNameInput} ơi! 🎄 <br> Giáng Sinh vui vẻ! Luôn giữ vững phong độ học tập! ❤️`,
+                        `Merry Xmas, ${fullNameInput}! 🧸 <br> Chúc bạn sớm nhận tin vui đỗ Đại học! ✨`,
+                        `Chào ${fullNameInput}! 🌟 <br> Chúc bạn luôn rạng rỡ và cầm chắc tấm vé trường Top!`
                     ];
                     selectedWish = wishesNu[Math.floor(Math.random() * wishesNu.length)];
                 } else {
+                    userType = "nam";
                     const wishesNam = [
-                        `Chào ${fullName}! ❄️ <br> Noel cháy nhé! Chúc ông thi đâu đỗ đó, phong độ vững vàng! ✨`,
-                        `${fullName} ơi! 🎄 <br> Giáng Sinh an lành! Sớm có "gấu" sưởi ấm và đỗ nguyện vọng 1! ❤️`,
-                        `Gửi ${fullName}, 🎁 <br> Chúc ông ôn thi hiệu quả, sớm trở thành Tân sinh viên trường Top! ✨`,
-                        `Merry Christmas, ${fullName}! ❄️ <br> Mạnh mẽ lên, cánh cửa Đại học đang chờ ông chinh phục!`,
-                        `Chúc ${fullName} 🌟 <br> Giữ vững bản lĩnh, học tập xuyên đêm và đỗ NV1 xuất sắc nhé!`,
-                        `Chào chiến hữu ${fullName}! 🎄 <br> Noel vui, tập trung cao độ cho kỳ thi sắp tới nào!`,
-                        `Chào ${fullName}! 🎄 <br> Chúc ông bản lĩnh như chiến binh, đỗ trường Top nhé!`,
-                        `Merry Xmas, ${fullName}! 🚀 <br> Tiến về phía trước, thành công đang chờ ông!`,
-                        `Chúc ${fullName} 🥂 <br> Một đêm Giáng Sinh tuyệt vời và đầy dự định mới mẻ!`
+                        `Chào ${fullNameInput}! ❄️ <br> Noel cháy nhé! Chúc ông thi đâu đỗ đó! ✨`,
+                        `${fullNameInput} ơi! 🎄 <br> Giáng Sinh an lành! Sớm đỗ nguyện vọng 1 nhé! ❤️`,
+                        `Merry Xmas, ${fullNameInput}! 🚀 <br> Mạnh mẽ lên, cánh cửa Đại học đang chờ ông!`,
+                        `Chào chiến hữu ${fullNameInput}! 🥂 <br> Một đêm Giáng Sinh tuyệt vời và thi tốt nhé!`
                     ];
                     selectedWish = wishesNam[Math.floor(Math.random() * wishesNam.length)];
                 }
             }
 
-            localStorage.setItem('visitorName', firstName);
-            localStorage.setItem('visitorID', fullID);
+            // Lưu dữ liệu
+            localStorage.setItem('visitorName', firstNameOnly);
             localStorage.setItem('userType', userType);
 
+            // Chuyển giao diện
             document.getElementById('input-area').style.display = 'none';
             document.getElementById('display-area').style.display = 'block';
 
+            // Chạy hiệu ứng chữ
             new Typed('#typed', {
                 strings: [selectedWish],
                 typeSpeed: 45,
@@ -214,6 +219,7 @@
             });
         }
 
+        // Tạo tuyết rơi
         $(document).ready(function() {
             for (let i = 0; i < 60; i++) {
                 let dot = document.createElement('div');

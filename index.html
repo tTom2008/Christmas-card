@@ -1,71 +1,18 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Merry Christmas</title>
-    
-    <link rel="stylesheet" type="text/css" href="css/normalize.css" />
-    <link rel="stylesheet" type="text/css" href="css/style.css" />
-    
-    <style>
-        body { background-color: #151522; overflow: hidden; display: flex; align-items: center; justify-content: center; margin: 0; }
-        .container { width: 100%; min-height: 100vh; display: flex; justify-content: center; align-items: center; }
-        button { cursor: pointer; position: relative; width: 250px; height: 250px; display: flex; justify-content: center; align-items: center; background: none; border: none; padding: 0; }
-        button div { width: 100%; height: 100%; position: absolute; background: white; border-radius: 100%; filter: blur(150px); opacity: 0.4; }
-        #box img { width: 100%; height: 100%; animation: mystery-box-animation 3s infinite ease-in-out; position: relative; z-index: 2; }
-        
-        @keyframes mystery-box-animation { 
-            0%, 100% { transform: translateY(0); } 
-            50% { transform: translateY(-30px); } 
-        }
-        
-        .transition-background { position: fixed; left: 0; top: 0; width: 100%; height: 100%; background-color: #151522; transition: 2s; opacity: 0; z-index: -10; pointer-events: none; }
-        .close { opacity: 1; z-index: 1000; }
-
-        #loading { position: fixed; width: 100%; height: 100%; background: #151522; z-index: 9999; display: flex; justify-content: center; align-items: center; }
-        .spinner { width: 50px; height: 50px; border: 5px solid #fff; border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-    </style>
-</head>
-
-<body>
-    <audio id="bgMusic" loop>
-        <source src="music.mp3" type="audio/mpeg">
-    </audio>
-
-    <div id="loading">
-        <div class="spinner"></div>
-    </div>
-
-    <div class="container">
-        <button id="box">
-            <div></div>
-            <img src="imgs/mystery-box.png" alt="Gift Box">
-        </button>
-    </div>
-
-    <div id="transition" class="transition-background"></div>
-
-    <script src="js/jquery.js"></script>
+<script src="js/jquery.js"></script>
     <script>
         window.addEventListener('load', function() {
-            document.getElementById('loading').style.display = 'none';
+            const loading = document.getElementById('loading');
+            if(loading) loading.style.display = 'none';
         });
 
-        // 2. XỬ LÝ CLICK ĐỂ PHÁT NHẠC VÀ CHUYỂN TRANG
+        // CHỈ LÀM NHIỆM VỤ CHUYỂN TRANG
         document.getElementById('box').addEventListener('click', function () {
-            // Phát nhạc ngay khi click vào hộp quà
-            const music = document.getElementById('bgMusic');
-            music.play().catch(e => console.log("Audio play failed:", e));
-
+            // Thêm hiệu ứng tối màn hình
             document.getElementById('transition').classList.add('close');
             
             setTimeout(() => {
-                // Chuyển đến trang wish.html (Đảm bảo file này có tên là wish.html trên máy bạn)
+                // Chuyển thẳng sang trang wish.html
                 window.location.href = 'wish.html'; 
             }, 1000); 
         });
     </script>
-</body>
-</html>

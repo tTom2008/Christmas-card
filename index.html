@@ -30,6 +30,10 @@
 </head>
 
 <body>
+    <audio id="bgMusic" loop>
+        <source src="music.mp3" type="audio/mpeg">
+    </audio>
+
     <div id="loading">
         <div class="spinner"></div>
     </div>
@@ -45,16 +49,20 @@
 
     <script src="js/jquery.js"></script>
     <script>
-        // Tắt màn hình loading khi trang tải xong
         window.addEventListener('load', function() {
             document.getElementById('loading').style.display = 'none';
         });
 
-        // Xử lý khi click vào hộp quà
+        // 2. XỬ LÝ CLICK ĐỂ PHÁT NHẠC VÀ CHUYỂN TRANG
         document.getElementById('box').addEventListener('click', function () {
+            // Phát nhạc ngay khi click vào hộp quà
+            const music = document.getElementById('bgMusic');
+            music.play().catch(e => console.log("Audio play failed:", e));
+
             document.getElementById('transition').classList.add('close');
+            
             setTimeout(() => {
-                // Chuyển đến trang noel1.html (đã xóa .html thừa)
+                // Chuyển đến trang wish.html (Đảm bảo file này có tên là wish.html trên máy bạn)
                 window.location.href = 'wish.html'; 
             }, 1000); 
         });

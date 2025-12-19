@@ -83,6 +83,29 @@
 </head>
 <body>
 
+<audio id="bgMusic" autoplay loop>
+    <source src="music.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+    // Đảm bảo nhạc phát ngay khi trang vừa load xong
+    window.addEventListener('load', function() {
+        const music = document.getElementById('bgMusic');
+        const playPromise = music.play();
+
+        if (playPromise !== undefined) {
+            playPromise.then(_ => {
+                console.log("Nhạc đã tự động phát ở trang B!");
+            }).catch(error => {
+                // Trường hợp trình duyệt vẫn chặn (hiếm khi xảy ra sau khi đã click ở trang A)
+                console.log("Cần click để phát nhạc");
+                // Tự động phát lại khi người dùng chạm vào màn hình trang B
+                document.body.addEventListener('click', () => music.play(), { once: true });
+            });
+        }
+    });
+</script>
+
     <div id="glass-card">
         <div id="input-area">
             <h2 style="color: #FFD700; font-family: 'Dancing Script'; font-size: 2.5rem;">Giáng Sinh cuối cấp, <br> Bạn tên là gì?</h2>
@@ -99,8 +122,7 @@
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://unpkg.com/typed.js@2.0.16/dist/typed.umd.js"></script>
-<script>
-        // Hàm làm sạch văn bản: Bỏ dấu tiếng Việt và chuẩn hóa về chữ thường
+    <script>
         function getCleanText(str) {
             if (!str) return "";
             str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a");
@@ -120,22 +142,24 @@
                 return;
             }
 
+            // --- KÍCH HOẠT NHẠC KHI NHẤN NÚT ---
+            const music = document.getElementById('bgMusic');
+            music.play().catch(error => console.log("Trình duyệt chặn tự động phát:", error));
+
             const cleanFull = getCleanText(fullName);
             const nameParts = fullName.split(/\s+/);
             const firstName = getCleanText(nameParts[nameParts.length - 1]);
             const fullID = cleanFull.replace(/\s+/g, "");
 
             let selectedWish = "";
-            let userType = "lop"; // Mặc định là album lớp
+            let userType = "lop"; 
 
-            // 1. KIỂM TRA NẾU LÀ THẦY TUẤN ANH
             if (cleanFull.includes("tuan anh")) {
-                userType = "thay"; // Xác định là album thầy
-                selectedWish = `Kính gửi Thầy Tuấn Anh! 🎄 <br> Cảm ơn Thầy đã dìu dắt chúng em suốt năm lớp 12. ^500 <br> Chúc Thầy Giáng Sinh an lành, dồi dào sức khỏe để cùng chúng em về đích thành công! ✨`;
+                userType = "thay";
+                selectedWish = `Gửi Thầy Tuấn Anh! ❄️ <br> Cảm ơn Thầy đã đến và đồng hành cùng chúng em trong tháng vừa qua. ^500 <br> Chúc Thầy Giáng Sinh an lành, luôn giữ vững ngọn lửa nhiệt huyết để cùng tụi em vượt vũ môn thành công! 🎁`;
             } 
             else {
-                // 2. NẾU LÀ HỌC SINH (CHIA NAM/NỮ ĐỂ LẤY LỜI CHÚC)
-                userType = "lop"; // Xác định là album lớp
+                userType = "lop";
                 const listNuGoc = ["ngoc han", "my han", "thu huong", "bao ngoc", "nhu ngoc", "tieu phung", "minh thu", "thu trang", "ngoc tram", "cam tu", "thanh phuong"];
                 const laNu = listNuGoc.some(tenNu => cleanFull.includes(tenNu));
 
@@ -161,28 +185,7 @@
                         `Merry Christmas, ${fullName}! ❄️ <br> Mạnh mẽ lên, cánh cửa Đại học đang chờ ông chinh phục!`,
                         `Chúc ${fullName} 🌟 <br> Giữ vững bản lĩnh, học tập xuyên đêm và đỗ NV1 xuất sắc nhé!`,
                         `Chào chiến hữu ${fullName}! 🎄 <br> Noel vui, tập trung cao độ cho kỳ thi sắp tới nào!`,
-                        `Chúc ${fullName} ❄️ <br> Có mùa Noel ý nghĩa và đạt điểm tuyệt đối môn sở trường!`,
-                        `${fullName} thân mến! 🎁 <br> Nghỉ xả hơi chút rồi quay lại "cày" để hóa rồng nhé! 🐉`,
-                        `Gửi ${fullName}, ❤️ <br> Chúc ông tràn đầy năng lượng để vượt qua thử thách lớp 12!`,
-                        `Merry Xmas, ${fullName}! 🥂 <br> Nâng ly cho tương lai rạng ngời phía trước của ông!`,
-                        `Chúc ${fullName} 🌟 <br> May mắn luôn đồng hành trong từng con số đêm nay!`,
-                        `${fullName} à! ❄️ <br> Chúc chàng trai lớp mình kiên trì với đam mê và thành công!`,
-                        `Gửi ${fullName}, 🎁 <br> Chúc ông Noel ấm, tâm thế vững để chiến đấu thi cử!`,
-                        `Merry Christmas, ${fullName}! 🎄 <br> Chúc ông học giỏi, đẹp trai và sớm thành công!`,
-                        `Chúc ${fullName} 🎈 <br> Có những phút giây thư giãn thật sự trước cuộc đua lớn!`,
-                        `Chào ${fullName}! ❄️ <br> Noel an lành! Chúc ông đạt kết quả cao nhất kỳ thi tới!`,
-                        `${fullName} thân mến! ✨ <br> Mong phép màu Noel giúp ông đỗ vào trường hằng mong ước!`,
-                        `Gửi ${fullName}, 🧸 <br> Chúc ông luôn tự tin, quyết đoán trong mọi bài thi!`,
-                        `Merry Xmas, ${fullName}! 🎀 <br> Cảm ơn ông đã cùng đồng hành suốt 3 năm qua!`,
-                        `Chúc ${fullName} 🌟 <br> Noel ấm, học tập bứt phá, tương lai rạng ngời!`,
                         `Chào ${fullName}! 🎄 <br> Chúc ông bản lĩnh như chiến binh, đỗ trường Top nhé!`,
-                        `${fullName} ơi! ❄️ <br> Noel vui vẻ! Luôn lạc quan và yêu đời như thế nhé!`,
-                        `Gửi tới ${fullName}, ❤️ <br> Chúc ông trưởng thành và vững vàng trên con đường đã chọn!`,
-                        `Merry Christmas, ${fullName}! 🎁 <br> Nhận sớm giấy báo nhập học làm quà Noel nhé!`,
-                        `Chúc ${fullName} 🌟 <br> Bứt phá mạnh mẽ và gặt hái thành công ngoài mong đợi!`,
-                        `Chào ${fullName}! 🎠 <br> Noel an lành! Giữ vững tinh thần để chiến thắng kỳ thi!`,
-                        `${fullName} thân mến! 🕯️ <br> Mong ánh sáng Noel soi lối cho ông đi đến thành công!`,
-                        `Gửi ${fullName}, ✨ <br> Chúc ông một mùa đông ấm lòng bên những người thân thương!`,
                         `Merry Xmas, ${fullName}! 🚀 <br> Tiến về phía trước, thành công đang chờ ông!`,
                         `Chúc ${fullName} 🥂 <br> Một đêm Giáng Sinh tuyệt vời và đầy dự định mới mẻ!`
                     ];
@@ -190,12 +193,10 @@
                 }
             }
 
-            // LƯU DỮ LIỆU VÀO MÁY
             localStorage.setItem('visitorName', firstName);
             localStorage.setItem('visitorID', fullID);
-            localStorage.setItem('userType', userType); // QUAN TRỌNG: Lưu loại là 'thay' hoặc 'lop'
+            localStorage.setItem('userType', userType);
 
-            // Hiệu ứng chuyển cảnh
             document.getElementById('input-area').style.display = 'none';
             document.getElementById('display-area').style.display = 'block';
 
@@ -213,7 +214,6 @@
             });
         }
 
-        // Tuyết rơi (giữ nguyên)
         $(document).ready(function() {
             for (let i = 0; i < 60; i++) {
                 let dot = document.createElement('div');
@@ -227,6 +227,5 @@
             }
         });
     </script>
-  
 </body>
 </html>

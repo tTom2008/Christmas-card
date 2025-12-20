@@ -11,20 +11,22 @@
     <style>
         body { background-color: #151522; overflow: hidden; display: flex; align-items: center; justify-content: center; margin: 0; }
         .container { width: 100%; min-height: 100vh; display: flex; justify-content: center; align-items: center; }
-        button { cursor: pointer; position: relative; width: 250px; height: 250px; display: flex; justify-content: center; align-items: center; background: none; border: none; padding: 0; outline: none; }
+        button { cursor: pointer; position: relative; width: 250px; height: 250px; display: flex; justify-content: center; align-items: center; background: none; border: none; padding: 0; outline: none; transition: transform 0.3s ease; }
+        /* Hiệu ứng phóng to khi hover cho mượt 280Hz */
+        button:hover { transform: scale(1.1); }
         button div { width: 100%; height: 100%; position: absolute; background: white; border-radius: 100%; filter: blur(150px); opacity: 0.4; }
         #box img { width: 100%; height: 100%; animation: mystery-box-animation 3s infinite ease-in-out; position: relative; z-index: 2; }
         
         @keyframes mystery-box-animation { 
-            0%, 100% { transform: translateY(0); } 
-            50% { transform: translateY(-30px); } 
+            0%, 100% { transform: translateY(0) rotate(0deg); } 
+            50% { transform: translateY(-30px) rotate(5deg); } 
         }
         
-        .transition-background { position: fixed; left: 0; top: 0; width: 100%; height: 100%; background-color: #151522; transition: 2s; opacity: 0; z-index: -10; pointer-events: none; }
+        .transition-background { position: fixed; left: 0; top: 0; width: 100%; height: 100%; background-color: #ffffff; transition: 1.5s cubic-bezier(0.65, 0, 0.35, 1); opacity: 0; z-index: -10; pointer-events: none; }
         .close { opacity: 1; z-index: 1000; }
 
-        #loading { position: fixed; width: 100%; height: 100%; background: #151522; z-index: 9999; display: flex; justify-content: center; align-items: center; }
-        .spinner { width: 50px; height: 50px; border: 5px solid #fff; border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; }
+        #loading { position: fixed; width: 100%; height: 100%; background: #151522; z-index: 9999; display: flex; justify-content: center; align-items: center; transition: opacity 0.5s; }
+        .spinner { width: 50px; height: 50px; border: 5px solid #fff; border-top-color: #ff0000; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
@@ -45,21 +47,37 @@
 
     <script src="js/jquery.js"></script>
     <script>
-        // 1. Tắt màn hình loading
-        window.addEventListener('load', function() {
-            const loader = document.getElementById('loading');
-            if(loader) loader.style.display = 'none';
-        });
-
-        // 2. Click hộp quà để chuyển trang (Không phát nhạc tại đây)
-        document.getElementById('box').addEventListener('click', function () {
-            // Thêm hiệu ứng phủ màu màn hình trước khi chuyển
-            document.getElementById('transition').classList.add('close');
+        // Sử dụng DOMContentLoaded để đảm bảo an toàn 100%
+        document.addEventListener('DOMContentLoaded', function() {
             
-            setTimeout(() => {
-                // Chuyển hướng sang file wish.html
-                window.location.href = 'wish.html'; 
-            }, 1000); 
+            // 1. Tắt màn hình loading mượt mà
+            const loader = document.getElementById('loading');
+            if(loader) {
+                setTimeout(() => {
+                    loader.style.opacity = '0';
+                    setTimeout(() => loader.style.display = 'none', 500);
+                }, 1000);
+            }
+
+            // 2. Click hộp quà để chuyển trang
+            const giftBox = document.getElementById('box');
+            const transitionScreen = document.getElementById('transition');
+
+            if (giftBox) {
+                giftBox.addEventListener('click', function () {
+                    // Thêm hiệu ứng rung mạnh trước khi chuyển trang (tăng điểm Wow)
+                    giftBox.style.animation = 'none';
+                    giftBox.style.transform = 'scale(0.8)';
+                    
+                    setTimeout(() => {
+                        if(transitionScreen) transitionScreen.classList.add('close');
+                        
+                        setTimeout(() => {
+                            window.location.href = 'wish.html'; 
+                        }, 1200); 
+                    }, 200);
+                });
+            }
         });
     </script>
 </body>

@@ -59,7 +59,7 @@
         let photoMeshes = [];
         let canRefresh = true;
 
-        function get5RandomPhotos() { return [...allPhotos].sort(() => 0.5 - Math.random()).slice(0, 5); }
+        function get5RandomPhotos() { return [...allPhotos].sort(() => 0.5 - Math.random()).slice(0, 10); }
 
         function refreshPhotos() {
             const newFiles = get5RandomPhotos();

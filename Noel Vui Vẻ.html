@@ -216,7 +216,7 @@
                 photoMeshes.forEach((mesh, i) => {
                     if (state === 'PHOTO' && i === selectedIndex) {
                         mesh.position.lerp(new THREE.Vector3(0, 0, 45), 0.1); 
-                        let rScale = window.innerWidth < 600 ? 5.5 : 10;
+                        let rScale = window.innerWidth < 600 ? 7.5 : 10;
                         mesh.scale.lerp(new THREE.Vector3(rScale, rScale, rScale), 0.1); 
                         mesh.material.opacity = 1;
                     } else if (state === 'PHOTO') {

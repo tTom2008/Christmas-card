@@ -155,7 +155,7 @@
 
         function createPhotos() {
             const geo = new THREE.PlaneGeometry(12, 12);
-            for(let i=0; i < 5; i++) {
+            for(let i=0; i < 10; i++) {
                 const mat = new THREE.MeshBasicMaterial({ side: 2, transparent: true, opacity: 0 });
                 const mesh = new THREE.Mesh(geo, mat); mesh.visible = false; scene.add(mesh); photoMeshes.push(mesh);
             }
@@ -193,7 +193,7 @@
                 photoMeshes.forEach(m => { m.visible = false; });
             } else {
                 titleMesh.visible = starMesh.visible = false;
-                const step = (Math.PI * 2) / 5;
+                const step = (Math.PI * 2) / 10;
                 let maxZ = -999, candidate = selectedIndex;
 
                 photoMeshes.forEach((mesh, i) => {

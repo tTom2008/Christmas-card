@@ -9,24 +9,38 @@
     <link rel="stylesheet" type="text/css" href="css/style.css" />
     
     <style>
-        body { background-color: #151522; overflow: hidden; display: flex; align-items: center; justify-content: center; margin: 0; }
-        .container { width: 100%; min-height: 100vh; display: flex; justify-content: center; align-items: center; }
-        button { cursor: pointer; position: relative; width: 250px; height: 250px; display: flex; justify-content: center; align-items: center; background: none; border: none; padding: 0; }
-        button div { width: 100%; height: 100%; position: absolute; background: white; border-radius: 100%; filter: blur(150px); opacity: 0.4; }
-        #box img { width: 100%; height: 100%; animation: mystery-box-animation 3s infinite ease-in-out; position: relative; z-index: 2; }
-        
-        @keyframes mystery-box-animation { 
-            0%, 100% { transform: translateY(0); } 
-            50% { transform: translateY(-30px); } 
-        }
-        
-        .transition-background { position: fixed; left: 0; top: 0; width: 100%; height: 100%; background-color: #151522; transition: 2s; opacity: 0; z-index: -10; pointer-events: none; }
-        .close { opacity: 1; z-index: 1000; }
-
-        #loading { position: fixed; width: 100%; height: 100%; background: #151522; z-index: 9999; display: flex; justify-content: center; align-items: center; }
-        .spinner { width: 50px; height: 50px; border: 5px solid #fff; border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-    </style>
+    body { background-color: #151522; overflow: hidden; display: flex; align-items: center; justify-content: center; margin: 0; width: 100vw; height: 100vh; }
+    .container { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; }
+    
+    button { 
+        cursor: pointer; position: relative; 
+        width: 60vmin; height: 60vmin; /* Tỉ lệ theo chiều nhỏ nhất của màn hình */
+        max-width: 300px; max-height: 300px;
+        display: flex; justify-content: center; align-items: center; 
+        background: none; border: none; padding: 0; 
+        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    button:hover { transform: scale(1.1); }
+    
+    button div { 
+        width: 100%; height: 100%; position: absolute; 
+        background: white; border-radius: 100%; 
+        filter: blur(80px); opacity: 0.3; 
+    }
+    
+    #box img { 
+        width: 100%; height: 100%; 
+        object-fit: contain; /* Giữ nguyên tỉ lệ ảnh */
+        animation: mystery-box-animation 3s infinite ease-in-out; 
+        position: relative; z-index: 2; 
+    }
+    
+    @keyframes mystery-box-animation { 
+        0%, 100% { transform: translateY(0) rotate(0); } 
+        50% { transform: translateY(-20px) rotate(5deg); } 
+    }
+</style>
 </head>
 
 <body>

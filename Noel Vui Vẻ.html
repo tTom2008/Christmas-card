@@ -2,27 +2,41 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Merry Christmas - Interactive AR</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
     <style>
-        body { margin: 0; overflow: hidden; background-color: #000; font-family: 'Segoe UI', sans-serif; }
+        body { margin: 0; overflow: hidden; background-color: #000; font-family: 'Segoe UI', sans-serif; touch-action: none; }
         #canvas-container { width: 100%; height: 100vh; display: block; }
-        #ui-layer { position: absolute; bottom: 30px; width: 100%; text-align: center; pointer-events: none; z-index: 100; }
-        .badge { display: inline-block; background: rgba(0,0,0,0.7); border: 2px solid #FFD700; color: #FFD700; padding: 10px 25px; border-radius: 50px; font-size: 18px; font-weight: bold; margin-bottom: 10px; box-shadow: 0 0 20px rgba(255, 215, 0, 0.5); }
-        .guide { color: #ccc; font-size: 13px; margin-bottom: 20px; text-shadow: 0 2px 4px black;}
-        button { pointer-events: auto; cursor: pointer; background: linear-gradient(to bottom, #D32F2F, #8B0000); color: #FFF; border: 2px solid #FFD700; padding: 15px 50px; border-radius: 30px; font-weight: 800; animation: pulse 1.5s infinite; }
+        #ui-layer { position: absolute; bottom: 20px; width: 100%; text-align: center; pointer-events: none; z-index: 100; }
+        
+        /* Fix font size responsive bằng clamp */
+        .badge { 
+            display: inline-block; background: rgba(0,0,0,0.8); border: 2px solid #FFD700; color: #FFD700; 
+            padding: 8px 20px; border-radius: 50px; 
+            font-size: clamp(14px, 4vw, 18px); 
+            font-weight: bold; margin-bottom: 8px; box-shadow: 0 0 20px rgba(255, 215, 0, 0.4); 
+        }
+        .guide { 
+            color: #ccc; font-size: clamp(10px, 3vw, 13px); 
+            margin-bottom: 15px; text-shadow: 0 2px 4px black; padding: 0 10px;
+        }
+        button { 
+            pointer-events: auto; cursor: pointer; background: linear-gradient(to bottom, #D32F2F, #8B0000); 
+            color: #FFF; border: 2px solid #FFD700; padding: 12px 40px; border-radius: 30px; 
+            font-weight: 800; animation: pulse 1.5s infinite; font-size: 16px;
+        }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
-        #camera-preview { position: absolute; top: 15px; right: 15px; width: 120px; height: 90px; border: 2px solid rgba(255,0,0,0.5); transform: scaleX(-1); opacity: 0.6; border-radius: 8px; }
+        #camera-preview { position: absolute; top: 10px; right: 10px; width: 100px; height: 75px; border: 1px solid rgba(255,255,255,0.3); transform: scaleX(-1); opacity: 0.7; border-radius: 8px; }
     </style>
 </head>
 <body>
     <div id="ui-layer">
         <div id="status" class="badge">🎄 Chờ khởi động... 🎄</div>
-        <div class="guide">🖐 <b>Xòe:</b> Xoay | 👌 <b>Pinch:</b> Xem ảnh | ✊ <b>Nắm:</b> Thu cây | ✌️ <b>Số 2:</b> Đổi 5 ảnh mới</div>
+        <div class="guide">🖐 <b>Xòe:</b> Xoay | 👌 <b>Pinch:</b> Xem ảnh | ✊ <b>Nắm:</b> Thu cây | ✌️ <b>Số 2:</b> Đổi 5 ảnh</div>
         <button id="btnStart" onclick="startSystem()">BẮT ĐẦU</button>
     </div>
     <div id="canvas-container"></div>
@@ -32,117 +46,28 @@
     <script>
         const MUSIC_URL = "./audio.mp3";
         let bgMusic = new Audio(MUSIC_URL); bgMusic.loop = true;
-
         const loader = new THREE.TextureLoader();
         loader.setCrossOrigin('anonymous'); 
 
-        // 1. TỰ ĐIỀN DANH SÁCH ẢNH TẠI ĐÂY
-        const allPhotos = ["https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img.jpeg"];
-        for (let i = 1; i <= 80; i++) {
-            // Bạn hãy tự sửa đuôi .JPG hoặc .jpg ở dòng dưới đây cho khớp với GitHub
-            allPhotos.push(
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img.jpeg",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(1).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(2).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(3).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(4).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(5).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(6).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(7).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(8).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(9).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(10).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(11).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(12).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(13).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(14).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(15).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(16).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(17).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(18).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(19).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(20).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(21).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(22).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(23).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(24).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(25).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(26).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(27).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(28).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(29).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(30).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(31).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(32).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(33).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(34).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(35).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(36).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(37).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(38).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(39).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(40).jpg",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(41).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(42).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(43).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(44).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(45).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(46).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(47).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(48).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(49).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(50).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(51).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(52).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(53).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(54).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(55).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(56).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(57).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(58).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(59).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(60).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(61).jpg",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(62).jpg",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(63).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(64).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(65).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(66).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(67).jpg",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(68).jpg",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(69).jpg",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(70).jpg",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(71).jpg",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(72).jpg",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(73).jpg",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(74).jpg",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(75).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(76).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(77).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(78).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(79).JPG",
-    "https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/Img%20(80).JPG"
-);
+        // Danh sách ảnh của bạn
+        const allPhotos = [];
+        for (let i = 0; i <= 80; i++) {
+            let name = i === 0 ? "Img.jpeg" : `Img%20(${i}).${(i >= 40 && i <= 41) || (i >= 61 && i <= 62) || (i >= 67 && i <= 74) ? 'jpg' : 'JPG'}`;
+            allPhotos.push(`https://raw.githubusercontent.com/tTom2008/Noel-Picture/main/${name}`);
         }
 
         let photoMeshes = [];
         let canRefresh = true;
 
-        function get5RandomPhotos() {
-            return [...allPhotos].sort(() => 0.5 - Math.random()).slice(0, 5);
-        }
+        function get5RandomPhotos() { return [...allPhotos].sort(() => 0.5 - Math.random()).slice(0, 5); }
 
-        // Hàm cập nhật ảnh đơn giản (Lấy trực tiếp link bạn đã điền)
         function refreshPhotos() {
             const newFiles = get5RandomPhotos();
             newFiles.forEach((src, i) => {
                 if (photoMeshes[i]) {
                     loader.load(src, (tex) => {
-                        if (photoMeshes[i].material.map) photoMeshes[i].material.map.dispose();
                         photoMeshes[i].material.map = tex;
                         photoMeshes[i].material.needsUpdate = true;
-                    }, undefined, (err) => {
-                        console.error("Lỗi tải ảnh (Hãy kiểm tra lại đuôi file): " + src);
                     });
                 }
             });
@@ -176,8 +101,13 @@
         function init3D() {
             const container = document.getElementById('canvas-container');
             scene = new THREE.Scene(); scene.fog = new THREE.FogExp2(0x000000, 0.002);
-            camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 1000);
-            camera.position.z = 100;
+            
+            // FIX: Camera FOV và vị trí linh hoạt
+            const aspect = window.innerWidth / window.innerHeight;
+            camera = new THREE.PerspectiveCamera(60, aspect, 0.1, 1000);
+            // Nếu màn hình dọc (mobile), lùi camera xa hơn để không bị ngộp
+            camera.position.z = aspect < 1 ? 160 : 110; 
+
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -191,6 +121,17 @@
             createDecorations(); 
             refreshPhotos(); 
             animate();
+
+            // Lắng nghe sự kiện resize
+            window.addEventListener('resize', onWindowResize, false);
+        }
+
+        function onWindowResize() {
+            const aspect = window.innerWidth / window.innerHeight;
+            camera.aspect = aspect;
+            camera.position.z = aspect < 1 ? 160 : 110;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
         }
 
         function createParticleSystem(type, count, size) {
@@ -199,7 +140,9 @@
                 const h = Math.random() * 70, y = h - 35, maxR = (1 - (h / 70)) * 35;
                 const r = maxR * (type === 'gold' ? Math.sqrt(Math.random()) : 1), theta = Math.random() * Math.PI * 2;
                 pTree.push(r * Math.cos(theta), y, r * Math.sin(theta));
-                const phi = Math.acos(2 * Math.random() - 1), lam = 2 * Math.PI * Math.random(), rad = 65 * Math.cbrt(Math.random());
+                
+                // FIX: Bán kính nổ nhỏ lại để không tràn màn hình mobile
+                const phi = Math.acos(2 * Math.random() - 1), lam = 2 * Math.PI * Math.random(), rad = 50 * Math.cbrt(Math.random());
                 pExp.push(rad * Math.sin(phi) * Math.cos(lam), rad * Math.sin(phi) * Math.sin(lam), rad * Math.cos(phi));
                 pPos.push(pTree[3*i], y, pTree[3*i+2]);
             }
@@ -269,10 +212,13 @@
 
                 if (state === 'EXPLODE') selectedIndex = candidate;
 
+                // FIX: Scale ảnh PHOTO dựa trên thiết bị
                 photoMeshes.forEach((mesh, i) => {
                     if (state === 'PHOTO' && i === selectedIndex) {
-                        mesh.position.lerp(new THREE.Vector3(0, 0, 50), 0.1);
-                        mesh.scale.lerp(new THREE.Vector3(6, 6, 6), 0.1); mesh.material.opacity = 1;
+                        mesh.position.lerp(new THREE.Vector3(0, 0, 45), 0.1); 
+                        let rScale = window.innerWidth < 600 ? 3.5 : 6;
+                        mesh.scale.lerp(new THREE.Vector3(rScale, rScale, rScale), 0.1); 
+                        mesh.material.opacity = 1;
                     } else if (state === 'PHOTO') {
                         mesh.material.opacity = THREE.MathUtils.lerp(mesh.material.opacity, 0.1, 0.1);
                         mesh.scale.lerp(new THREE.Vector3(0.5, 0.5, 0.5), 0.1);
@@ -289,7 +235,7 @@
             hands.setOptions({ maxNumHands: 1, modelComplexity: 0, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
             
             hands.onResults(results => {
-                ctx.clearRect(0,0,120,90); ctx.drawImage(results.image, 0, 0, 120, 90);
+                ctx.clearRect(0,0,100,75); ctx.drawImage(results.image, 0, 0, 100, 75);
                 if(results.multiHandLandmarks.length > 0) {
                     const lm = results.multiHandLandmarks[0];
                     handX = lm[9].x; 
@@ -302,19 +248,19 @@
 
                     if (isForeUp && isMiddleUp && isRingDown && isPinkyDown) {
                         if (canRefresh) {
-                            statusDiv.innerText = "✌️ Đang bốc 5 ảnh mới...";
+                            statusDiv.innerText = "✌️ Đổi ảnh mới...";
                             refreshPhotos(); canRefresh = false;
                             setTimeout(() => { canRefresh = true; }, 2000);
                         }
-                    } else if (avgDist < 0.2) { 
-                        state = 'TREE'; statusDiv.innerText = "✊ Đang thu cây"; 
+                    } else if (avgDist < 0.18) { 
+                        state = 'TREE'; statusDiv.innerText = "✊ Thu cây"; 
                     } else if (pinchDist < 0.05) { 
-                        state = 'PHOTO'; statusDiv.innerText = "👌 Đang xem ảnh"; 
+                        state = 'PHOTO'; statusDiv.innerText = "👌 Xem ảnh"; 
                     } else { 
-                        state = 'EXPLODE'; statusDiv.innerText = "🖐 Di chuyển tay để xoay"; 
+                        state = 'EXPLODE'; statusDiv.innerText = "🖐 Xoay cây thông"; 
                     }
                 } else { 
-                    state = 'TREE'; handX = 0.5; statusDiv.innerText = "🎄 Chờ bàn tay..."; 
+                    state = 'TREE'; statusDiv.innerText = "🎄 Chờ bàn tay..."; 
                 }
             });
             new Camera(video, { onFrame: async () => { await hands.send({image: video}); }, width: 320, height: 240 }).start();

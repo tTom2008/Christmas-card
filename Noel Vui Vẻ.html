@@ -30,19 +30,20 @@
             font-weight: 800; animation: pulse 1.5s infinite; font-size: 16px;
         }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
-        #camera-preview { 
+    #camera-preview { 
     position: absolute; 
     top: 15px; 
     right: 15px; 
-    width: 120px; /* Độ rộng khung */
-    height: 90px; /* Độ cao khung */
-    border: 2px solid rgba(255, 215, 0, 0.8); /* Màu vàng cho tiệp với chủ đề */
+    width: 120px; 
+    height: 90px; 
+    border: 2px solid rgba(255, 215, 0, 0.8); /* Đổi sang màu vàng cho sang */
     transform: scaleX(-1); 
     opacity: 0.8; 
     border-radius: 12px; 
-    box-shadow: 0 0 15px rgba(255, 0, 0, 0.5); /* Thêm hiệu ứng phát sáng cho xịn */
-    object-fit: cover; /* QUAN TRỌNG: Giúp hình ảnh lấp đầy ô thiết kế */
+    object-fit: cover; /* QUAN TRỌNG: Ép video/canvas tràn đầy không để khoảng trắng */
     background: #000;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    z-index: 1000;
 }
     </style>
 </head>
@@ -245,35 +246,34 @@ function startSystem() {
     document.getElementById('btnStart').style.display = 'none'; 
     bgMusic.play(); 
     init3D();
-
+    
     const video = document.querySelector('.input_video');
     const canvas = document.getElementById('camera-preview');
     const ctx = canvas.getContext('2d');
     const statusDiv = document.getElementById('status');
 
-    // Đảm bảo kích thước nội tại của canvas khớp với CSS
+    // Cố định kích thước vẽ của canvas
     canvas.width = 120;
     canvas.height = 90;
 
     const hands = new Hands({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`});
-    
-    // Tăng nhẹ cấu hình để chính xác hơn trên máy mạnh
     hands.setOptions({ 
         maxNumHands: 1, 
-        modelComplexity: 1, // Tăng lên 1 thay vì 0 để nhận diện tay mượt hơn trên RTX 3060
+        modelComplexity: 0, 
         minDetectionConfidence: 0.5, 
         minTrackingConfidence: 0.5 
     });
 
     hands.onResults(results => {
-        // Xóa và vẽ lại hình ảnh tràn khung canvas
+        // Vẽ kết quả camera lên canvas góc màn hình
         ctx.save();
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // Vẽ tràn toàn bộ canvas 120x90
         ctx.drawImage(results.image, 0, 0, canvas.width, canvas.height);
         ctx.restore();
-
+          // ... (giữ nguyên phần logic nhận diện cử chỉ tay bên dưới của bạn)
         if(results.multiHandLandmarks.length > 0) {
-            // ... (giữ nguyên phần logic nhận diện cử chỉ tay bên dưới của bạn)
+          
                     const lm = results.multiHandLandmarks[0];
                     handX = lm[9].x; 
                     
@@ -300,8 +300,13 @@ function startSystem() {
                     state = 'TREE'; statusDiv.innerText = "🎄 Chờ bàn tay..."; 
                 }
             });
-            new Camera(video, { onFrame: async () => { await hands.send({image: video}); }, width: 320, height: 240 }).start();
-        }
+              // Khởi tạo camera với cấu hình tối ưu cho mobile
+    new Camera(video, {
+        onFrame: async () => { await hands.send({image: video}); },
+        width: 640, // Tăng độ phân giải quét để chính xác hơn trên Mobile
+        height: 480
+    }).start();
+}
     </script>
 </body>
 </html>
